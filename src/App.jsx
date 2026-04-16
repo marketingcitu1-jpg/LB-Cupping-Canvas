@@ -404,22 +404,69 @@ export default function CoffeeCuppingViz() {
   const [complexity, setComplexity] = useState(4);
   const [generated, setGenerated] = useState(false);
   const [seed, setSeed] = useState(0);
+  const [apiImageUrl, setApiImageUrl] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
 
-  const generate = useCallback(() => {
+  const generateLocal = useCallback(() => {
     if (!canvasRef.current) return;
     const newSeed = Date.now();
     setSeed(newSeed);
+    setApiImageUrl("");
     generateImage(canvasRef.current, notes, sweetness, acidity, complexity, newSeed);
     setGenerated(true);
   }, [notes, sweetness, acidity, complexity]);
 
+  const handleGenerate = useCallback(async () => {
+    setIsLoading(true);
+    setApiError("");
+    setGenerated(false);
+
+    try {
+      const response = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ flavorNotes: notes, sweetness, acidity, complexity }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.imageUrl) {
+        setApiImageUrl(data.imageUrl);
+        setGenerated(true);
+        return;
+      }
+
+      throw new Error("No imageUrl returned from API");
+    } catch (error) {
+      console.error(error);
+      setApiError("Server generation failed. Falling back to local preview.");
+      generateLocal();
+    } finally {
+      setIsLoading(false);
+    }
+  }, [notes, sweetness, acidity, complexity, generateLocal]);
+
   useEffect(() => {
-    if (generated) {
+    if (generated && !apiImageUrl) {
       generateImage(canvasRef.current, notes, sweetness, acidity, complexity, seed);
     }
-  }, [sweetness, acidity, complexity]);
+  }, [sweetness, acidity, complexity, notes, generated, apiImageUrl, seed]);
 
   const download = () => {
+    if (apiImageUrl) {
+      const a = document.createElement("a");
+      a.href = apiImageUrl;
+      a.download = "cupping-" + Date.now() + ".png";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      return;
+    }
+
     if (!canvasRef.current) return;
     canvasRef.current.toBlob((blob) => {
       if (!blob) return;
@@ -478,12 +525,19 @@ export default function CoffeeCuppingViz() {
           <DotSelector label="Acidity" value={acidity} onChange={setAcidity} hint="1 = soft & blurred · 7 = sharp edges" />
           <DotSelector label="Complexity" value={complexity} onChange={setComplexity} hint="Layers & detail" />
 
-          <button onClick={generate} style={{
+          <button onClick={handleGenerate} disabled={isLoading} style={{
             width: "100%", padding: "12px 0", background: "#a0917e", color: "#1a1612",
             border: "none", borderRadius: 6, fontFamily: "'DM Mono', monospace",
             fontSize: 12, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase",
-            cursor: "pointer", marginBottom: 10,
-          }}>Generate</button>
+            cursor: isLoading ? "default" : "pointer", marginBottom: 10, opacity: isLoading ? 0.8 : 1,
+          }}>{isLoading ? "Generating..." : "Generate"}</button>
+
+          {apiError && (
+            <div style={{
+              marginBottom: 12, color: "#e0b1a0", fontSize: 12,
+              fontFamily: "'DM Mono', monospace",
+            }}>{apiError}</div>
+          )}
 
           {generated && (
             <button onClick={download} style={{
@@ -533,9 +587,18 @@ export default function CoffeeCuppingViz() {
               <span style={{ fontSize: 11, color: "#4a4038", textTransform: "uppercase", letterSpacing: "0.08em" }}>Enter notes & generate</span>
             </div>
           )}
-          <canvas ref={canvasRef} style={{
-            display: generated ? "block" : "none", width: 360, height: 450, borderRadius: 7,
-          }} />
+          {apiImageUrl ? (
+            <img
+              id="canvas-display"
+              src={apiImageUrl}
+              alt="Generated coffee label"
+              style={{ width: 360, height: 450, objectFit: "cover", display: generated ? "block" : "none" }}
+            />
+          ) : (
+            <canvas ref={canvasRef} style={{
+              display: generated ? "block" : "none", width: 360, height: 450, borderRadius: 7,
+            }} />
+          )}
         </div>
       </div>
 

@@ -1,45 +1,120 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
 const FLAVOR_MAP = {
+  // Berries
   berry: { hue: 340, sat: 80, warmth: 0.3 }, blueberry: { hue: 260, sat: 75, warmth: 0.2 },
   strawberry: { hue: 350, sat: 85, warmth: 0.4 }, raspberry: { hue: 330, sat: 80, warmth: 0.3 },
-  cherry: { hue: 355, sat: 78, warmth: 0.5 }, citrus: { hue: 45, sat: 90, warmth: 0.6 },
-  lemon: { hue: 55, sat: 92, warmth: 0.5 }, orange: { hue: 30, sat: 88, warmth: 0.7 },
-  grapefruit: { hue: 15, sat: 75, warmth: 0.5 }, apple: { hue: 100, sat: 60, warmth: 0.4 },
-  peach: { hue: 25, sat: 70, warmth: 0.6 }, apricot: { hue: 35, sat: 72, warmth: 0.6 },
-  plum: { hue: 290, sat: 55, warmth: 0.4 }, grape: { hue: 280, sat: 60, warmth: 0.3 },
+  cherry: { hue: 355, sat: 78, warmth: 0.5 }, blackberry: { hue: 280, sat: 70, warmth: 0.2 },
+  cranberry: { hue: 345, sat: 75, warmth: 0.4 }, currant: { hue: 310, sat: 65, warmth: 0.3 },
+  boysenberry: { hue: 320, sat: 72, warmth: 0.35 }, mulberry: { hue: 290, sat: 68, warmth: 0.3 },
+  
+  // Citrus & Bright Fruits
+  citrus: { hue: 45, sat: 90, warmth: 0.6 }, lemon: { hue: 55, sat: 92, warmth: 0.5 },
+  orange: { hue: 30, sat: 88, warmth: 0.7 }, grapefruit: { hue: 15, sat: 75, warmth: 0.5 },
+  lime: { hue: 120, sat: 85, warmth: 0.4 }, tangerine: { hue: 28, sat: 90, warmth: 0.75 },
+  mandarin: { hue: 32, sat: 88, warmth: 0.72 }, bergamot: { hue: 70, sat: 50, warmth: 0.4 },
+  yuzu: { hue: 50, sat: 88, warmth: 0.6 }, pomelo: { hue: 48, sat: 82, warmth: 0.65 },
+  
+  // Stone & Pome Fruits
+  apple: { hue: 100, sat: 60, warmth: 0.4 }, peach: { hue: 25, sat: 70, warmth: 0.6 },
+  apricot: { hue: 35, sat: 72, warmth: 0.6 }, plum: { hue: 290, sat: 55, warmth: 0.4 },
+  pear: { hue: 85, sat: 55, warmth: 0.45 }, nectarine: { hue: 28, sat: 75, warmth: 0.65 },
+  prune: { hue: 285, sat: 50, warmth: 0.35 }, damson: { hue: 295, sat: 58, warmth: 0.38 },
+  
+  // Tropical Fruits
   tropical: { hue: 50, sat: 85, warmth: 0.8 }, mango: { hue: 40, sat: 88, warmth: 0.8 },
   pineapple: { hue: 52, sat: 82, warmth: 0.7 }, passion: { hue: 48, sat: 80, warmth: 0.7 },
-  fig: { hue: 310, sat: 40, warmth: 0.5 }, melon: { hue: 90, sat: 55, warmth: 0.5 },
+  papaya: { hue: 38, sat: 85, warmth: 0.75 }, guava: { hue: 100, sat: 75, warmth: 0.55 },
+  kiwi: { hue: 110, sat: 70, warmth: 0.35 }, coconut: { hue: 45, sat: 30, warmth: 0.55 },
+  banana: { hue: 54, sat: 85, warmth: 0.75 }, lychee: { hue: 350, sat: 70, warmth: 0.5 },
+  dragon: { hue: 340, sat: 75, warmth: 0.45 },
+  
+  // Dried & Preserved Fruits
+  raisin: { hue: 25, sat: 50, warmth: 0.6 }, prune: { hue: 285, sat: 50, warmth: 0.35 },
+  date: { hue: 30, sat: 60, warmth: 0.7 }, fig: { hue: 310, sat: 40, warmth: 0.5 },
+  melon: { hue: 90, sat: 55, warmth: 0.5 }, cantaloupe: { hue: 35, sat: 75, warmth: 0.65 },
+  
+  // Color Descriptors
   red: { hue: 0, sat: 85, warmth: 0.7 }, yellow: { hue: 55, sat: 90, warmth: 0.6 },
   golden: { hue: 42, sat: 80, warmth: 0.7 }, brown: { hue: 25, sat: 50, warmth: 0.6 },
   dark: { hue: 20, sat: 30, warmth: 0.3 }, bright: { hue: 60, sat: 95, warmth: 0.5 },
+  
+  // Floral Notes
   jasmine: { hue: 60, sat: 40, warmth: 0.4 }, lavender: { hue: 270, sat: 45, warmth: 0.3 },
   rose: { hue: 345, sat: 55, warmth: 0.4 }, floral: { hue: 310, sat: 50, warmth: 0.4 },
+  hibiscus: { hue: 340, sat: 65, warmth: 0.3 }, violet: { hue: 280, sat: 50, warmth: 0.25 },
+  orchid: { hue: 300, sat: 55, warmth: 0.35 }, peony: { hue: 330, sat: 60, warmth: 0.4 },
+  geranium: { hue: 350, sat: 65, warmth: 0.35 },
+  
+  // Herbal & Tea
   herbal: { hue: 130, sat: 45, warmth: 0.3 }, mint: { hue: 160, sat: 60, warmth: 0.1 },
   chamomile: { hue: 50, sat: 35, warmth: 0.5 }, tea: { hue: 80, sat: 30, warmth: 0.4 },
-  bergamot: { hue: 70, sat: 50, warmth: 0.4 }, hibiscus: { hue: 340, sat: 65, warmth: 0.3 },
+  green: { hue: 120, sat: 70, warmth: 0.2 }, matcha: { hue: 115, sat: 65, warmth: 0.25 },
+  basil: { hue: 125, sat: 60, warmth: 0.3 }, thyme: { hue: 110, sat: 45, warmth: 0.35 },
+  oregano: { hue: 118, sat: 50, warmth: 0.4 }, sage: { hue: 125, sat: 40, warmth: 0.35 },
+  
+  // Chocolate & Cocoa
   chocolate: { hue: 20, sat: 60, warmth: 0.7 }, cocoa: { hue: 15, sat: 55, warmth: 0.6 },
+  darkchocolate: { hue: 15, sat: 50, warmth: 0.6 }, milkchocolate: { hue: 25, sat: 55, warmth: 0.65 },
+  
+  // Sweet & Sugary
   caramel: { hue: 35, sat: 70, warmth: 0.8 }, honey: { hue: 42, sat: 75, warmth: 0.7 },
-  toffee: { hue: 30, sat: 65, warmth: 0.8 }, vanilla: { hue: 45, sat: 35, warmth: 0.6 },
+  toffee: { hue: 30, sat: 65, warmth: 0.8 }, molasses: { hue: 18, sat: 60, warmth: 0.8 },
+  maple: { hue: 28, sat: 65, warmth: 0.7 }, brown sugar: { hue: 32, sat: 68, warmth: 0.75 },
+  sugarcane: { hue: 45, sat: 70, warmth: 0.65 }, butterscotch: { hue: 33, sat: 72, warmth: 0.82 },
+  
+  // Vanilla & Extracts
+  vanilla: { hue: 45, sat: 35, warmth: 0.6 }, vanillin: { hue: 45, sat: 38, warmth: 0.6 },
+  
+  // Nuts
   nutty: { hue: 30, sat: 45, warmth: 0.6 }, almond: { hue: 35, sat: 40, warmth: 0.5 },
   hazelnut: { hue: 25, sat: 50, warmth: 0.6 }, walnut: { hue: 20, sat: 40, warmth: 0.5 },
-  smoky: { hue: 10, sat: 25, warmth: 0.7 }, earthy: { hue: 30, sat: 30, warmth: 0.5 },
-  woody: { hue: 25, sat: 35, warmth: 0.5 }, cedar: { hue: 20, sat: 32, warmth: 0.5 },
+  peanut: { hue: 32, sat: 48, warmth: 0.58 }, pecan: { hue: 28, sat: 52, warmth: 0.62 },
+  pistachio: { hue: 95, sat: 45, warmth: 0.4 }, macadamia: { hue: 38, sat: 42, warmth: 0.55 },
+  
+  // Spices
   spice: { hue: 15, sat: 65, warmth: 0.8 }, cinnamon: { hue: 18, sat: 68, warmth: 0.8 },
   clove: { hue: 12, sat: 55, warmth: 0.7 }, pepper: { hue: 8, sat: 40, warmth: 0.6 },
   ginger: { hue: 38, sat: 65, warmth: 0.7 }, cardamom: { hue: 110, sat: 35, warmth: 0.5 },
+  nutmeg: { hue: 20, sat: 55, warmth: 0.75 }, allspice: { hue: 15, sat: 60, warmth: 0.75 },
+  anise: { hue: 110, sat: 40, warmth: 0.4 }, star: { hue: 25, sat: 62, warmth: 0.7 },
+  cumin: { hue: 28, sat: 48, warmth: 0.65 }, coriander: { hue: 120, sat: 42, warmth: 0.45 },
+  
+  // Smoky & Roasted
+  smoky: { hue: 10, sat: 25, warmth: 0.7 }, roasted: { hue: 18, sat: 45, warmth: 0.7 },
+  smoked: { hue: 12, sat: 28, warmth: 0.68 }, charred: { hue: 8, sat: 20, warmth: 0.65 },
+  
+  // Earthy & Woody
+  earthy: { hue: 30, sat: 30, warmth: 0.5 }, woody: { hue: 25, sat: 35, warmth: 0.5 },
+  cedar: { hue: 20, sat: 32, warmth: 0.5 }, oak: { hue: 28, sat: 38, warmth: 0.55 },
+  sandalwood: { hue: 32, sat: 35, warmth: 0.58 }, pine: { hue: 115, sat: 40, warmth: 0.3 },
+  
+  // Wine & Fermented
   wine: { hue: 350, sat: 50, warmth: 0.5 }, winey: { hue: 350, sat: 50, warmth: 0.5 },
-  fermented: { hue: 30, sat: 40, warmth: 0.5 }, butter: { hue: 48, sat: 50, warmth: 0.7 },
-  cream: { hue: 42, sat: 25, warmth: 0.6 }, creamy: { hue: 42, sat: 25, warmth: 0.6 },
-  sugar: { hue: 45, sat: 20, warmth: 0.5 }, molasses: { hue: 18, sat: 60, warmth: 0.8 },
-  maple: { hue: 28, sat: 65, warmth: 0.7 }, sweet: { hue: 40, sat: 55, warmth: 0.6 },
-  bitter: { hue: 15, sat: 35, warmth: 0.4 }, sour: { hue: 65, sat: 70, warmth: 0.3 },
-  tangy: { hue: 55, sat: 75, warmth: 0.4 }, tart: { hue: 60, sat: 72, warmth: 0.3 },
+  fermented: { hue: 30, sat: 40, warmth: 0.5 }, vinous: { hue: 345, sat: 52, warmth: 0.52 },
+  
+  // Dairy & Creamy
+  butter: { hue: 48, sat: 50, warmth: 0.7 }, cream: { hue: 42, sat: 25, warmth: 0.6 },
+  creamy: { hue: 42, sat: 25, warmth: 0.6 }, milky: { hue: 45, sat: 20, warmth: 0.55 },
+  
+  // Texture & Body
+  smooth: { hue: 30, sat: 30, warmth: 0.5 }, velvety: { hue: 35, sat: 28, warmth: 0.52 },
+  silky: { hue: 40, sat: 25, warmth: 0.55 }, thick: { hue: 25, sat: 35, warmth: 0.6 },
+  
+  // Taste Profile
+  sweet: { hue: 40, sat: 55, warmth: 0.6 }, bitter: { hue: 15, sat: 35, warmth: 0.4 },
+  sour: { hue: 65, sat: 70, warmth: 0.3 }, tangy: { hue: 55, sat: 75, warmth: 0.4 },
+  tart: { hue: 60, sat: 72, warmth: 0.3 }, salty: { hue: 200, sat: 40, warmth: 0.35 },
+  
+  // Mouthfeel
   crisp: { hue: 180, sat: 40, warmth: 0.2 }, clean: { hue: 190, sat: 30, warmth: 0.3 },
-  smooth: { hue: 30, sat: 30, warmth: 0.5 }, bold: { hue: 10, sat: 60, warmth: 0.7 },
-  rich: { hue: 15, sat: 55, warmth: 0.7 }, robust: { hue: 10, sat: 50, warmth: 0.7 },
-  delicate: { hue: 300, sat: 25, warmth: 0.3 }, juicy: { hue: 0, sat: 70, warmth: 0.5 },
+  fresh: { hue: 140, sat: 50, warmth: 0.15 }, bright: { hue: 60, sat: 95, warmth: 0.5 },
+  
+  // Character
+  bold: { hue: 10, sat: 60, warmth: 0.7 }, robust: { hue: 10, sat: 50, warmth: 0.7 },
+  rich: { hue: 15, sat: 55, warmth: 0.7 }, delicate: { hue: 300, sat: 25, warmth: 0.3 },
+  juicy: { hue: 0, sat: 70, warmth: 0.5 }, vibrant: { hue: 55, sat: 90, warmth: 0.55 },
+  subtle: { hue: 200, sat: 25, warmth: 0.3 }, complex: { hue: 275, sat: 45, warmth: 0.45 },
 };
 
 function parseFlavorNotes(text) {

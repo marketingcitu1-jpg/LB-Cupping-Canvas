@@ -1,7 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-image-preview" });
+import { generateImage } from "ai";
 
 const getVisualMapping = (value, labels) => {
   if (value > 5) return labels.high;
@@ -43,14 +40,18 @@ Complexity ${complexity}/7 (${complexityVisual}).
 Style: Modern, minimalist boutique coffee brand design.`;
 
   try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const base64Image = response?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+    const result = await generateImage({
+      model: "google/gemini-3.1-flash-image-preview",
+      prompt: prompt,
+      size: "1600x2000",
+    });
 
-    if (!base64Image) {
-      throw new Error("No image data returned from generative API");
+    if (!result.image) {
+      throw new Error("No image data returned from Nano Banana API");
     }
 
+    // Convert image data to base64 data URL
+    const base64Image = Buffer.from(result.image).toString("base64");
     res.status(200).json({ imageUrl: `data:image/png;base64,${base64Image}` });
   } catch (error) {
     console.error(error);

@@ -32,12 +32,11 @@ export default async function handler(req, res) {
     medium: "structured layering with balanced detail",
   });
 
-  const prompt = `Specialty coffee label artwork.
-Notes: ${flavorNotes}.
-Visual intensity: Sweetness ${sweetness}/7 (${sweetnessVisual}),
-Acidity ${acidity}/7 (${acidityVisual}),
-Complexity ${complexity}/7 (${complexityVisual}).
-Style: Modern, minimalist boutique coffee brand design.`;
+  const prompt = `Non-objective abstract expressionism masterpiece. Thick impasto oil paint texture with heavy palette knife strokes.
+Dominant colors: Deep crimson, creamy avocado green, bright sun-yellow, swirling in a dynamic vortex.
+Emotional intensity based on: Sweetness ${sweetness}/7 (${sweetnessVisual}), Acidity ${acidity}/7 (${acidityVisual}), Complexity ${complexity}/7 (${complexityVisual}).
+Features: Rhythmic organic patterns, visceral sensory experience, ethereal lighting, pure abstraction with no literal objects, no fruit, no recognizable forms.
+Style: Impressionistic energy, dynamic movement and emotion expressed through color and texture. 8k resolution masterpiece.`;
 
   try {
     const result = await generateImage({

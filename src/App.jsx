@@ -60,7 +60,7 @@ const FLAVOR_MAP = {
   // Sweet & Sugary
   caramel: { hue: 35, sat: 70, warmth: 0.8 }, honey: { hue: 42, sat: 75, warmth: 0.7 },
   toffee: { hue: 30, sat: 65, warmth: 0.8 }, molasses: { hue: 18, sat: 60, warmth: 0.8 },
-  maple: { hue: 28, sat: 65, warmth: 0.7 }, brown sugar: { hue: 32, sat: 68, warmth: 0.75 },
+  maple: { hue: 28, sat: 65, warmth: 0.7 }, "brown sugar": { hue: 32, sat: 68, warmth: 0.75 },
   sugarcane: { hue: 45, sat: 70, warmth: 0.65 }, butterscotch: { hue: 33, sat: 72, warmth: 0.82 },
   
   // Vanilla & Extracts
